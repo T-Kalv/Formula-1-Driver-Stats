@@ -17,34 +17,109 @@
 <head>
     <meta charset="UTF-8">
     <title>F1 Drivers Statistics 2024</title>
+    <style>
+        body
+        {
+            font-family: "Times New Roman", Times, serif;
+            background: white;
+            padding: 30px;
+            font-size: 18px;
+        }
+
+        h1
+        {
+            text-align: center;
+        }
+
+        #searchBar
+        {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            margin-bottom: 20px;
+            border: 1px solid #000;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+
+        #drivers
+        {
+            margin-top: 20px;
+        }
+
+        .driver
+        {
+            padding: 15px 0;
+        }
+
+        .driver h2
+        {
+            margin: 0;
+            font-size: 1em;
+        }
+
+        .driver p {
+            margin: 5px 0;
+        }
+    </style>
 </head>
 <body>
 <h1>F1 Drivers Statistics 2024</h1>
+<input type="text" id="searchBar" placeholder="Search" oninput="searchDriver()">
 <div id="drivers">Loading Drivers...</div>
-
 <script>
+    let driversData = [];
     async function loadDrivers()
     {
         const response = await fetch("http://localhost:8080/api/v1/driver");
         const data = await response.json();
+        driversData = data;
+        displayDrivers(driversData);
+    }
+
+    function displayDrivers(data)
+    {
         const driversDiv = document.getElementById("drivers");
         driversDiv.innerHTML = "";
-        data.forEach(driver =>
+        if (data.length === 0)
         {
-            const div = document.createElement("div");
-            div.innerHTML = `
-                    <h2>${driver.driverName} (#${driver.number})</h2>
-                    <p>Abbreviation: ${driver.abbreviation}</p>
-                    <p>Team: ${driver.team}</p>
-                    <p>Country: ${driver.country}</p>
-                    <p>Podiums: ${driver.podiums}</p>
-                    <p>Points: ${driver.points}</p>
-                    <p>Highest Finish: ${driver.highestRaceFinish}</p>
-                    <p>Base: ${driver.base}</p>
-                    <p>Team Chief: ${driver.teamChief}</p>
+            driversDiv.innerHTML = "<p>Error Search Not Found!</p>";
+        }
+        else
+        {
+            data.forEach(driver =>
+            {
+                const div = document.createElement("div");
+                div.classList.add("driver");
+                div.innerHTML = `
+                    <h2>${driver.driverName} (${driver.abbreviation})</h2>
+                    <p><strong>Abbreviation:</strong> ${driver.abbreviation}</p>
+                    <p><strong>Number:</strong> ${driver.number}</p>
+                    <p><strong>Team:</strong> ${driver.team}</p>
+                    <p><strong>Country:</strong> ${driver.country}</p>
+                    <p><strong>Podiums:</strong> ${driver.podiums}</p>
+                    <p><strong>Points:</strong> ${driver.points}</p>
+                    <p><strong>Highest Finish:</strong> ${driver.highestRaceFinish}</p>
+                    <p><strong>Team Chief:</strong> ${driver.teamChief}</p>
+                    <p><strong>Team Base:</strong> ${driver.base}</p>
                 `;
                 driversDiv.appendChild(div);
             });
+        }
+    }
+
+    function searchDriver()
+    {
+        const searchQuery = document.getElementById("searchBar").value.trim().toLowerCase();
+        if (searchQuery === "") {
+            displayDrivers(driversData);
+            return;
+        }
+        let filteredDrivers = driversData.filter(driver =>
+        {
+            return driver.driverName.toLowerCase().includes(searchQuery) || driver.team.toLowerCase().includes(searchQuery) || driver.country.toLowerCase().includes(searchQuery) || driver.base.toLowerCase().includes(searchQuery) || driver.teamChief.toLowerCase().includes(searchQuery) || driver.abbreviation.toLowerCase().includes(searchQuery);
+        });
+        displayDrivers(filteredDrivers);
     }
     loadDrivers();
 </script>
